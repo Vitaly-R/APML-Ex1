@@ -20,12 +20,12 @@ def relu_grad_numpy(x: np.ndarray, dy: np.ndarray):
 
 
 # the relu tensorflow operation
-@tf.custom_gradient
+# @tf.custom_gradient
 def relu_tf(x):
-    result = tf.numpy_function(relu_numpy, [x], tf.float32, name='my_relu_op')
+    result = tf.py_func(relu_numpy, [x], tf.float32, name='my_relu_op')
 
     def grad(dy):
-        return tf.numpy_function(relu_grad_numpy, [x, dy], tf.float32, name='my_relu_grad_op')
+        return tf.py_func(relu_grad_numpy, [x, dy], tf.float32, name='my_relu_grad_op')
 
     return result, grad
 
@@ -35,27 +35,24 @@ def relu_tf(x):
 # b.shape = (k, m)
 def matmul_numpy(a: np.ndarray, b: np.ndarray):
     result = np.dot(a, b)
-
     return result
 
 
-# dy_dab.shape = YOUR ANSWER HERE
+# dy_dab.shape = (n, m)  ---- answer ----
 # dy_da.shape = a.shape
 # dy_db.shape = b.shape
 def matmul_grad_numpy(a: np.ndarray, b: np.ndarray, dy_dab: np.ndarray):
-    dy_da = None    # YOUR CODE HERE
-    dy_db = None    # YOUR CODE HERE
+    dy_da = np.dot(dy_dab, b.T)
+    dy_db = np.dot(a.T, dy_dab)
     return [dy_da, dy_db]
 
 
-@tf.custom_gradient
+# @tf.custom_gradient
 def matmul_tf(a, b):
-    # use tf.numpy_function
-
-    result = None   # YOUR CODE HERE
+    result = tf.py_func(matmul_numpy, [a, b], tf.float32, name='my_matmul_op')
 
     def grad(dy_dab):
-        return None  # YOUR CODE HERE
+        return tf.py_func(matmul_grad_numpy, [a, b, dy_dab], tf.float32, name='my_matmul_grad_op')
 
     return result, grad
 
@@ -64,26 +61,24 @@ def matmul_tf(a, b):
 # y.shape = (batch)
 # ypredict.shape = (batch)
 # the result is a scalar
-# dloss_dyPredict.shape = YOUR ANSWER HERE
+# dloss_dyPredict.shape = (batch)  ---- answer ----
 def mse_numpy(y, ypredict):
-    loss = None   # YOUR CODE HERE
+    loss = np.mean(np.square(ypredict - y))
     return loss
 
 
 def mse_grad_numpy(y, yPredict, dy):  # dy is gradient from next node in the graph, not the gradient of our y!
-    dloss_dyPredict = None    # YOUR CODE HERE
-    dloss_dy = None           # YOUR CODE HERE
+    dloss_dyPredict = 2*(y.shape**-1)*(yPredict - y)
+    dloss_dy = dloss_dyPredict * dy  # @todo: check this, because it doesn't seem right...
     return [dloss_dy, dloss_dyPredict]
 
 
-@tf.custom_gradient
+# @tf.custom_gradient
 def mse_tf(y, y_predict):
-    # use tf.numpy_function
-
-    loss = None   # YOUR CODE HERE
+    loss = tf.py_func(mse_numpy, [y, y_predict], tf.float32, name='my_mse_func')
 
     def grad(dy):
-        return None  # YOUR CODE HERE
+        return tf.py_func(mse_grad_numpy, [y, y_predict, dy], tf.float32, name='my_mse_grad_func')
 
     return loss, grad
 
