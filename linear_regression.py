@@ -20,7 +20,10 @@ def model(x: tf.Tensor):
                 the result shape is (batch)
     """
     # YOUR CODE HERE
-    pass
+    w = None
+    b = None
+    y_predict = None
+    return y_predict, [w, b]
 
 
 def train(epochs, learning_rate, batch_size):
@@ -32,15 +35,17 @@ def train(epochs, learning_rate, batch_size):
     :param learning_rate: the learning rate of the SGD
     :return: list contains the mean loss from each epoch.
     """
-    # YOUR CODE HERE
-    pass
+    # put entire training loop in a session
+    for _ in range(epochs):
+        #
+        pass
+    return []
 
 
 def main():
-    # losses = train(50, 0.01, 32)
-    # plt.plot(losses)
-    # plt.show()
-    pass
+    losses = train(50, 0.01, 32)
+    plt.plot(losses)
+    plt.show()
 
 
 if __name__== "__main__":

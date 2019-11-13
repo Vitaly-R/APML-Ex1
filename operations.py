@@ -81,8 +81,3 @@ def mse_tf(y, y_predict):
         return tf.py_func(mse_grad_numpy, [y, y_predict, dy], tf.float32, name='my_mse_grad_func')
 
     return loss, grad
-
-
-
-
-
