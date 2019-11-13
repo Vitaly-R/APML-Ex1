@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
+import operations as ops
 
 
 def load_data():
@@ -35,10 +36,18 @@ def train(epochs, learning_rate, batch_size):
     :param learning_rate: the learning rate of the SGD
     :return: list contains the mean loss from each epoch.
     """
-    # put entire training loop in a session
-    for _ in range(epochs):
-        #
-        pass
+    x_data, y_data = load_data()
+    X = tf.placeholder(tf.float32, name='X')
+    Y = tf.placeholder(tf.float32, name='Y')
+    W = tf.get_variable('weights', initializer=tf.constant(0.0))
+    b = tf.get_variable('bias', initializer=tf.constant(0.0))
+    y_predict = tf.add(ops.matmul_tf(X, W), b)
+    init = tf.global_variables_initializer()
+    with tf.Session() as sess:
+        sess.run(init)
+        for _ in range(epochs):
+            #
+            pass
     return []
 
 
