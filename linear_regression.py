@@ -1,6 +1,12 @@
+import warnings
+warnings.filterwarnings('ignore', category=FutureWarning)
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.preprocessing import normalize
+
+np.random.seed(0)
+tf.random.set_random_seed(0)
 
 
 def load_data():
@@ -19,8 +25,9 @@ def model(x: tf.Tensor):
     :return:  a tuple that contains: 1.symbolic tensor y_predict, 2. list of the variables used in the model: [W, b]
                 the result shape is (batch)
     """
-    # YOUR CODE HERE
-    pass
+    w = tf.get_variable('weights', shape=[x.shape[1], 1], dtype=tf.float32)
+    b = tf.get_variable('bias', shape=[1, 1], dtype=tf.float32)
+    return tf.add(tf.matmul(x, w), b), [w, b]
 
 
 def train(epochs, learning_rate, batch_size):
@@ -33,33 +40,45 @@ def train(epochs, learning_rate, batch_size):
     :return: list contains the mean loss from each epoch.
     """
     x_data, y_data = load_data()
+    x_data = normalize(x_data)
+    y_data = y_data - np.mean(y_data)
+    y_data /= np.std(y_data)
 
-    X = tf.placeholder(tf.float32, name='X')
-    Y = tf.placeholder(tf.float32, name='Y')
+    X = tf.placeholder(tf.float32, shape=(batch_size, x_data.shape[1]), name='X')
+    Y = tf.placeholder(tf.float32, shape=(batch_size, ), name='Y')
+    n = tf.constant(1 / batch_size)
 
-    w = tf.get_variable('weights', initializer=tf.constant(0.0))
-    b = tf.get_variable('bias', initializer=tf.constant(0.0))
+    y_predicted, [weights, bias] = model(X)
+    loss = n * tf.reduce_sum(tf.square(tf.subtract(Y, y_predicted), name='square_errors'), name='sum_SE')
 
-    y_predicted = tf.add(tf.multiply(w, X), b)
+    gradients = tf.gradients(loss, [weights, bias])
+    grad_w = gradients[0]
+    grad_b = gradients[1]
 
-    loss = tf.square(Y - y_predicted, name='loss')
+    training_step_w = tf.assign(weights, weights - learning_rate * grad_w)
+    training_step_b = tf.assign(bias, bias - learning_rate * grad_b)
 
     init = tf.global_variables_initializer()
-
-    optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate).minimize(loss)
-
+    losses = list()
     with tf.Session() as sess:
         sess.run(init)
-        for _ in range(epochs):
-            pass
+        for j in range(epochs):
+            epoch_losses = list()
+            for i in range(y_data.size // batch_size):
+                x_batch = x_data[i * batch_size:(i + 1) * batch_size]
+                y_batch = y_data[i * batch_size:(i + 1) * batch_size]
+                _, _, loss_val = sess.run([training_step_w, training_step_b, loss], feed_dict={X: x_batch, Y: y_batch})
+                epoch_losses.append(loss_val)
+            losses.append(np.mean(epoch_losses))
+    return losses
 
 
 def main():
-    losses = train(50, 0.01, 32)
+    losses = train(50, 0.0001, 32)
     plt.plot(losses)
     plt.show()
 
 
 if __name__== "__main__":
-  main()
+    main()
 
