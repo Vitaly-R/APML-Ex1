@@ -1,7 +1,6 @@
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
-import operations as ops
 
 
 def load_data():
@@ -46,6 +45,8 @@ def train(epochs, learning_rate, batch_size):
     loss = tf.square(Y - y_predicted, name='loss')
 
     init = tf.global_variables_initializer()
+
+    optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate).minimize(loss)
 
     with tf.Session() as sess:
         sess.run(init)
