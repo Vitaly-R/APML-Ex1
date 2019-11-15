@@ -70,8 +70,11 @@ def train(model_fn, batch_size, learning_rate=None):
             results = np.zeros(e_training_logits.shape[0]).astype(np.int32)
             for i in range(results.shape[0]):
                 results[i] = np.argmax(e_training_logits[i])
-            training_accuracies.append(len(results[results == y_training_batch]) / len(results))
-            training_losses.append(np.mean(loss_val))
+            round_loss = np.mean(loss_val)
+            round_accuracy = len(results[results == y_training_batch]) / len(results)
+            training_accuracies.append(round_accuracy)
+            training_losses.append(round_loss)
+            print('training round {}, loss: {}, accuracy: {}'.format(j, round_loss, round_accuracy)) if not j % 5 else None
 
         # ---------- testing ----------
         test_losses = list()
@@ -112,8 +115,8 @@ def train(model_fn, batch_size, learning_rate=None):
 
 
 def main():
-    train(mlp, 64)
-    # train(conv_net, 64)
+    # train(mlp, 64)
+    train(conv_net, 64)
 
 
 if __name__ == "__main__":

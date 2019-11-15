@@ -38,5 +38,22 @@ def conv_net(x: tf.Tensor, nlabels):
     :param nlabels: the dimension of the output.
     :return: a symbolic tensor, the result of the mlp, with shape (batch, nlabels). the model return logits (before softmax).
     """
-    # YOUR CODE HERE
-    pass
+    # ---------- reshaping input ----------
+    x_re = tf.expand_dims(x, -1)
+    # ---------- 1st convolution ----------
+    filter1 = tf.get_variable('filter1', shape=[x.shape[1], x.shape[2], 1, 20], dtype=tf.float32, trainable=True)
+    conv1 = tf.nn.conv2d(x_re, filter1, [1, 1, 1, 1], 'SAME')
+    # ---------- 1st max pool ----------
+    max_pool1 = tf.nn.max_pool(conv1, [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
+    # ---------- 2nd convolution ----------
+    filter2 = tf.get_variable('filter2', shape=[max_pool1.shape[0], max_pool1.shape[1], 20, 20], dtype=tf.float32, trainable=True)
+    conv2 = tf.nn.conv2d(max_pool1, filter2, [1, 1, 1, 1], 'SAME')
+    # ---------- 2nd max pool ----------
+    max_pool2 = tf.nn.max_pool(conv2, [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
+    # ---------- flatten ----------
+    flattened = tf.reshape(max_pool2, (max_pool2.shape[0], max_pool2.shape[1] * max_pool2.shape[2] * max_pool2.shape[3]))
+    # ---------- linear ----------
+    w = tf.get_variable('weights', shape=[flattened.shape[1], nlabels], dtype=tf.float32, trainable=True)
+    b = tf.get_variable('bias', shape=[1, nlabels], dtype=tf.float32, trainable=True)
+    result = tf.add(tf.matmul(flattened, w), b)
+    return result
