@@ -2,6 +2,8 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 from model import mlp, conv_net
+np.random.seed(0)
+tf.random.set_random_seed(0)
 
 
 def train(model_fn, batch_size, learning_rate=None):
@@ -18,16 +20,16 @@ def train(model_fn, batch_size, learning_rate=None):
 
     x_train_np = x_train_np - np.mean(x_train_np)
     x_train_np = x_train_np / np.std(x_train_np)
-    training_inds = list(range(x_train_np.shape[0]))
 
+    training_inds = list(range(x_train_np.shape[0]))
     np.random.shuffle(training_inds)
     x_train_np = x_train_np[training_inds]
     y_train_np = y_train_np[training_inds]
 
     x_test_np = x_test_np - np.mean(x_test_np)
     x_test_np = x_test_np / np.std(x_test_np)
-    test_inds = list(range(x_test_np.shape[0]))
 
+    test_inds = list(range(x_test_np.shape[0]))
     np.random.shuffle(test_inds)
     x_test_np = x_test_np[test_inds]
     y_test_np = y_test_np[test_inds]
@@ -74,6 +76,8 @@ def train(model_fn, batch_size, learning_rate=None):
         # ---------- testing ----------
         test_losses = list()
         test_accuracies = list()
+        one_hot_test_y = np.zeros((y_test_np.shape[0], n_labels))
+        one_hot_test_y[np.arange(y_test_np.shape[0]), y_test_np] = 1
         for j in range(x_test_np.shape[0] // batch_size):
             x_test_batch = x_test_np[j * batch_size: (j + 1) * batch_size]
             y_test_batch = y_test_np[j * batch_size: (j + 1) * batch_size]
@@ -84,8 +88,9 @@ def train(model_fn, batch_size, learning_rate=None):
             results = np.zeros(e_logits.shape[0]).astype(np.int32)
             for i in range(results.shape[0]):
                 results[i] = np.argmax(e_logits[i])
-            misses = np.zeros(results.shape)
-            misses[np.where(results != y_test_batch)] = 1
+            misses = list()
+            for i in range(e_logits.shape[0]):
+                misses.append(np.sqrt(np.sum(np.square(e_logits[i] - one_hot_test_y[i]))))
             test_losses.append(np.mean(misses))
             test_accuracies.append(len(results[results == y_test_batch]) / len(results))
 
