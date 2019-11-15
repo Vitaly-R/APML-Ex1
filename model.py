@@ -1,9 +1,7 @@
 import tensorflow as tf
-import numpy as np
-from keras.datasets import fashion_mnist
 
 
-def mlp(x: tf.Tensor, nlabels, sess: tf.Session):
+def mlp(x: tf.Tensor, nlabels):
     """
     multi layer perceptrone: x -> linear > relu > linear.
     :param x: symbolic tensor with shape (batch, 28, 28)
