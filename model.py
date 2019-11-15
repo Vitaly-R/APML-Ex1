@@ -25,7 +25,7 @@ def mlp(x: tf.Tensor, nlabels):
     relu_res = tf.nn.relu(linear1, name='relu')
 
     # ---------- second linear layer ----------
-    result = tf.add(tf.matmul(w2, relu_res, name='matmul_2'), b2, name='linear_2')
+    result = tf.transpose(tf.add(tf.matmul(w2, relu_res, name='matmul_2'), b2, name='linear_2'))
     return result
 
 
