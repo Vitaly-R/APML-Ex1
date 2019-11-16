@@ -41,12 +41,12 @@ def conv_net(x: tf.Tensor, nlabels):
     # ---------- reshaping input ----------
     x_re = tf.expand_dims(x, -1)
     # ---------- 1st convolution ----------
-    filter1 = tf.get_variable('filter1', shape=[x.shape[1], x.shape[2], 1, 20], dtype=tf.float32, trainable=True)
+    filter1 = tf.get_variable('filter1', shape=[3, 3, 1, 20], dtype=tf.float32, trainable=True)
     conv1 = tf.nn.conv2d(x_re, filter1, [1, 1, 1, 1], 'SAME')
     # ---------- 1st max pool ----------
     max_pool1 = tf.nn.max_pool(conv1, [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
     # ---------- 2nd convolution ----------
-    filter2 = tf.get_variable('filter2', shape=[max_pool1.shape[0], max_pool1.shape[1], 20, 20], dtype=tf.float32, trainable=True)
+    filter2 = tf.get_variable('filter2', shape=[3, 3, 20, 20], dtype=tf.float32, trainable=True)
     conv2 = tf.nn.conv2d(max_pool1, filter2, [1, 1, 1, 1], 'SAME')
     # ---------- 2nd max pool ----------
     max_pool2 = tf.nn.max_pool(conv2, [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
