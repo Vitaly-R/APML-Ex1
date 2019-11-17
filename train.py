@@ -74,7 +74,7 @@ def train(model_fn, batch_size, learning_rate=None):
             round_accuracy = len(results[results == y_training_batch]) / len(results)
             training_accuracies.append(round_accuracy)
             training_losses.append(round_loss)
-            print('training round {}, loss: {}, accuracy: {}'.format(j, round_loss, round_accuracy)) if not j % 5 else None
+            print('training round {}, loss: {}, accuracy: {}'.format(j, round_loss, round_accuracy)) if not j % 10 else None
 
         # ---------- testing ----------
         test_losses = list()
@@ -84,17 +84,14 @@ def train(model_fn, batch_size, learning_rate=None):
         for j in range(x_test_np.shape[0] // batch_size):
             x_test_batch = x_test_np[j * batch_size: (j + 1) * batch_size]
             y_test_batch = y_test_np[j * batch_size: (j + 1) * batch_size]
-            logits_res = sess.run(logits, feed_dict={x_ph: x_test_batch, y_ph: y_test_batch})
-            e_logits = np.exp(logits_res)
+            test_logits, loss_vals = sess.run([logits, loss], feed_dict={x_ph: x_test_batch, y_ph: y_test_batch})
+            e_logits = np.exp(test_logits)
             for i in range(e_logits.shape[0]):
                 e_logits[i] = e_logits[i] / np.sum(e_logits[i])
             results = np.zeros(e_logits.shape[0]).astype(np.int32)
             for i in range(results.shape[0]):
                 results[i] = np.argmax(e_logits[i])
-            misses = list()
-            for i in range(e_logits.shape[0]):
-                misses.append(np.sqrt(np.sum(np.square(e_logits[i] - one_hot_test_y[i]))))
-            test_losses.append(np.mean(misses))
+            test_losses.append(np.mean(loss_vals))
             test_accuracies.append(len(results[results == y_test_batch]) / len(results))
 
     # ---------- plotting the graphs ----------
