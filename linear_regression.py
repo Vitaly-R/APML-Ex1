@@ -1,5 +1,3 @@
-import warnings
-warnings.filterwarnings('ignore', category=FutureWarning)
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
@@ -43,13 +41,13 @@ def train(epochs, learning_rate, batch_size):
     x_data = normalize(x_data)
     y_data = y_data - np.mean(y_data)
     y_data /= np.std(y_data)
+    y_data = np.reshape(y_data, (y_data.shape[0], 1))
 
     X = tf.placeholder(tf.float32, shape=(batch_size, x_data.shape[1]), name='X')
-    Y = tf.placeholder(tf.float32, shape=(batch_size, ), name='Y')
-    n = tf.constant(1 / batch_size)
+    Y = tf.placeholder(tf.float32, shape=(batch_size, 1), name='Y')
 
     y_predicted, [weights, bias] = model(X)
-    loss = n * tf.reduce_sum(tf.square(tf.subtract(Y, y_predicted), name='square_errors'), name='sum_SE')
+    loss = tf.losses.mean_squared_error(labels=Y, predictions=y_predicted)
 
     gradients = tf.gradients(loss, [weights, bias])
     grad_w = gradients[0]
@@ -74,11 +72,11 @@ def train(epochs, learning_rate, batch_size):
 
 
 def main():
-    losses = train(50, 0.0001, 32)
+    losses = train(100, 0.001, 32)
     plt.plot(losses)
     plt.show()
 
 
-if __name__== "__main__":
+if __name__ == "__main__":
     main()
 
