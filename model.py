@@ -45,15 +45,13 @@ def conv_net(x: tf.Tensor, nlabels, regularizer=None):
     # ---------- 1st convolution ----------
     filter1 = tf.get_variable('filter1', shape=[3, 3, 1, 20], dtype=tf.float32, trainable=True, regularizer=regularizer)
     conv1 = tf.nn.conv2d(x_re, filter1, [1, 1, 1, 1], 'SAME')
-    activation1 = tf.nn.relu(conv1, name='relu1')
     # ---------- 1st max pool ----------
-    max_pool1 = tf.nn.max_pool(activation1, [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
+    max_pool1 = tf.nn.max_pool(conv1, [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
     # ---------- 2nd convolution ----------
     filter2 = tf.get_variable('filter2', shape=[3, 3, 20, 20], dtype=tf.float32, trainable=True, regularizer=regularizer)
     conv2 = tf.nn.conv2d(max_pool1, filter2, [1, 1, 1, 1], 'SAME')
-    activation2 = tf.nn.relu(conv2, name='relu2')
     # ---------- 2nd max pool ----------
-    max_pool2 = tf.nn.max_pool(activation2, [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
+    max_pool2 = tf.nn.max_pool(conv2, [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
     # ---------- flatten ----------
     flattened = tf.reshape(max_pool2, (max_pool2.shape[0], max_pool2.shape[1] * max_pool2.shape[2] * max_pool2.shape[3]))
     # ---------- linear ----------
