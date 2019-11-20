@@ -36,7 +36,8 @@ def load_datasets(batch_size):
 
 
 def calculate_accuracy(logits, labels):
-    s_logits = tf.nn.softmax(logits=logits, axis=1).eval()
+    s_logits = np.exp(logits)
+    s_logits = s_logits / (np.sum(s_logits, axis=1)[..., np.newaxis])
     results = np.zeros(s_logits.shape[0]).astype(np.int32)
     for i in range(results.shape[0]):
         results[i] = np.argmax(s_logits[i])
@@ -142,7 +143,7 @@ def train(model_fn, batch_size, learning_rate=None, epochs=10, regularize=False)
 
 
 def main():
-    train(mlp, 100, epochs=10, regularize=True)
+    train(mlp, 100, epochs=1, regularize=True)
     # tf.reset_default_graph()
     # train(mlp, 100, epochs=10)
     # tf.reset_default_graph()
