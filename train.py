@@ -5,12 +5,24 @@ from model import mlp, conv_net
 
 
 def normalize(data):
+    """
+    :param data: the array to normalize.
+    :return: a normalized version of the input array.
+    """
     res = data - np.mean(data)
     res = res / np.std(res)
     return res
 
 
 def batch_dataset(data: np.ndarray, labels: np.ndarray, batch_size):
+    """
+    Divides the given dataset (consisting of data, and labels) into batches of size batch_size.
+    Assumes that batch_size is smaller than the number of elements in the arrays.
+    :param data: data of the dataset.
+    :param labels: labels of the corresponding data vectors.
+    :param batch_size: size of batches.
+    :return: a list of batches of data points, and a list of batches of the corresponding labels.
+    """
     inds = np.arange(data.shape[0])
     np.random.shuffle(inds)
     s_data = data[inds]
@@ -26,6 +38,12 @@ def batch_dataset(data: np.ndarray, labels: np.ndarray, batch_size):
 
 
 def load_datasets(batch_size):
+    """
+    Loads and pre processes the fashion mnist dataset
+    :param batch_size: size of batches to return.
+    :return: a list of batches of data points, and a list of batches of the corresponding labels, for both the training and test sets.
+    As well as the number of labels in the set.
+    """
     ((x_train_np, y_train_np), (x_test_np, y_test_np)) = tf.keras.datasets.fashion_mnist.load_data()
     n_x_train = normalize(x_train_np)
     n_x_test = normalize(x_test_np)
@@ -37,6 +55,12 @@ def load_datasets(batch_size):
 
 
 def calculate_accuracy(logits, labels):
+    """
+    Calculates the accuracy of the predictions represented by the logits.
+    :param logits: logits which represent the prediction results.
+    :param labels: the correct labels to compare against
+    :return: the ratio of correct predictions to all predictions.
+    """
     s_logits = np.exp(logits)
     s_logits = s_logits / (np.sum(s_logits, axis=1)[..., np.newaxis])
     results = np.zeros(s_logits.shape[0]).astype(np.int32)
@@ -46,6 +70,11 @@ def calculate_accuracy(logits, labels):
 
 
 def plot_graph(to_plot, title):
+    """
+    Plots given data which is given as a function of the number of epochs.
+    :param to_plot: data to plot.
+    :param title: title of the graph
+    """
     plt.figure()
     plt.title(title)
     plt.xlabel('epoch')
@@ -141,10 +170,10 @@ def train(model_fn, batch_size, learning_rate=None, epochs=10, regularize=False,
 
 def main():
     train(mlp, 64, epochs=50)
-    # tf.reset_default_graph()
-    # train(conv_net, 64, epochs=50)
-    # tf.reset_default_graph()
-    # train(mlp, 64, epochs=150, regularize=True)
+    tf.reset_default_graph()
+    train(conv_net, 64, epochs=50)
+    tf.reset_default_graph()
+    train(mlp, 64, epochs=150, regularize=True)
     plt.show()
 
 
