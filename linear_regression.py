@@ -25,6 +25,25 @@ def model(x: tf.Tensor):
     return tf.add(tf.matmul(x, w), b), [w, b]
 
 
+def pre_process_data(x, y):
+    """
+    Preforms pre processing on the data set.
+    :param x: data
+    :param y: labels
+    :return: shuffled and normalized data and labels.
+    """
+    inds = np.arange(x.shape[0])
+    np.random.shuffle(inds)
+    x_data = x[inds]
+    y_data = y[inds]
+
+    x_data = normalize(x_data)
+    y_data = y_data - np.mean(y_data)
+    y_data /= np.std(y_data)
+    y_data = np.reshape(y_data, (y_data.shape[0], 1))
+    return x_data, y_data
+
+
 def train(epochs, learning_rate, batch_size):
     """
     create linear regression using model() function from above and train it on boston houses dataset using batch-SGD.
@@ -36,15 +55,7 @@ def train(epochs, learning_rate, batch_size):
     :return: list contains the mean loss from each epoch.
     """
     x_data, y_data = load_data()
-    inds = np.arange(x_data.shape[0])
-    np.random.shuffle(inds)
-    x_data = x_data[inds]
-    y_data = y_data[inds]
-
-    x_data = normalize(x_data)
-    y_data = y_data - np.mean(y_data)
-    y_data /= np.std(y_data)
-    y_data = np.reshape(y_data, (y_data.shape[0], 1))
+    x_data, y_data = pre_process_data(x_data, y_data)
 
     X = tf.placeholder(tf.float32, shape=(batch_size, x_data.shape[1]), name='X')
     Y = tf.placeholder(tf.float32, shape=(batch_size, 1), name='Y')
