@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import tensorflow as tf
 import numpy as np
 from model import mlp
@@ -52,6 +53,7 @@ def main():
 
         original_accuracies = list()
         adversarial_accuracies = list()
+        examples = list()
         for data, labels in zip(data_set, label_set):
             s_grads = sess.run([s_gradients], feed_dict={x_ph: data, y_ph: labels})
             s_grads = np.reshape(s_grads[0], s_grads[0].shape[1:])
@@ -69,9 +71,18 @@ def main():
             logits = logits[0]
             adversarial_accuracies.append(calculate_accuracy(logits, labels))
 
-        # 6. comparison
-        print('accuracy of original images:', np.mean(original_accuracies))
-        print('accuracy of adversarial images:', np.mean(adversarial_accuracies))
+            if len(examples) < 2:
+                examples.append(data[0])
+                examples.append(adversarial_images[0])
+
+        # 6. comparison and showing examples
+        print('average accuracy of original images:', np.mean(original_accuracies))
+        print('average accuracy of adversarial images:', np.mean(adversarial_accuracies))
+        plt.figure()
+        plt.imshow(examples[0], cmap='gray')
+        plt.figure()
+        plt.imshow(examples[1], cmap='gray')
+        plt.show()
 
 
 if __name__ == '__main__':
