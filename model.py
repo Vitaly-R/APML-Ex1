@@ -51,7 +51,7 @@ def conv_net(x: tf.Tensor, nlabels, regularizer=None):
     # ---------- 2nd convolution ----------
     filter2 = tf.get_variable('filter2', shape=[3, 3, 20, 20], dtype=tf.float32, trainable=True, regularizer=regularizer)
     conv2 = tf.nn.conv2d(max_pool1, filter2, [1, 1, 1, 1], 'SAME')
-    activation2 = tf.nn.relu(conv2, name='relu1')
+    activation2 = tf.nn.relu(conv2, name='relu2')
     # ---------- 2nd max pool ----------
     max_pool2 = tf.nn.max_pool(activation2, [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
     # ---------- flatten ----------

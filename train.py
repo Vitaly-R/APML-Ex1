@@ -4,10 +4,6 @@ import matplotlib.pyplot as plt
 from model import mlp, conv_net
 
 
-np.random.seed(0)
-tf.random.set_random_seed(0)
-
-
 def normalize(data):
     res = data - np.mean(data)
     res = res / np.std(res)
@@ -147,8 +143,8 @@ def train(model_fn, batch_size, learning_rate=None, epochs=10, regularize=False)
 
 def main():
     train(mlp, 100, epochs=10, regularize=True)
-    tf.reset_default_graph()
-    train(mlp, 100, epochs=10)
+    # tf.reset_default_graph()
+    # train(mlp, 100, epochs=10)
     # tf.reset_default_graph()
     # train(conv_net, 64, epochs=1, regularize=True)
     # tf.reset_default_graph()
@@ -158,4 +154,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

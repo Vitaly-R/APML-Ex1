@@ -3,9 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import normalize
 
-np.random.seed(0)
-tf.random.set_random_seed(0)
-
 
 def load_data():
     from sklearn.datasets import load_boston
@@ -35,9 +32,15 @@ def train(epochs, learning_rate, batch_size):
     please use your mse-loss implementation.
     :param epochs: number of epochs
     :param learning_rate: the learning rate of the SGD
+    :param batch_size: size of learning batch
     :return: list contains the mean loss from each epoch.
     """
     x_data, y_data = load_data()
+    inds = np.arange(x_data.shape[0])
+    np.random.shuffle(inds)
+    x_data = x_data[inds]
+    y_data = y_data[inds]
+
     x_data = normalize(x_data)
     y_data = y_data - np.mean(y_data)
     y_data /= np.std(y_data)
@@ -72,11 +75,14 @@ def train(epochs, learning_rate, batch_size):
 
 
 def main():
-    losses = train(100, 0.001, 32)
+    losses = train(epochs=10000, learning_rate=0.1, batch_size=32)
+    plt.figure()
+    plt.title('Training loss for linear regression at each epoch')
+    plt.xlabel('epoch')
+    plt.ylabel('training loss')
     plt.plot(losses)
     plt.show()
 
 
 if __name__ == "__main__":
     main()
-
