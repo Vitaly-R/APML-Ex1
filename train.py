@@ -19,8 +19,9 @@ def batch_dataset(data: np.ndarray, labels: np.ndarray, batch_size):
     data_batches = np.array_split(s_data, split_inds)
     labels_batches = np.array_split(s_labels, split_inds)
     if data_batches[-1].shape[0] < batch_size:
-        data_batches.pop(-1)
-        labels_batches.pop(-1)
+        f_inds = np.arange(batch_size - data_batches[-1].shape[0])
+        data_batches[-1] = np.array(list(data_batches[-1]) + list(s_data[f_inds]))
+        labels_batches[-1] = np.array(list(labels_batches[-1]) + list(s_labels[f_inds]))
     return data_batches, labels_batches
 
 
@@ -47,10 +48,11 @@ def calculate_accuracy(logits, labels):
 def plot_graph(to_plot, title):
     plt.figure()
     plt.title(title)
+    plt.xlabel('epoch')
     plt.plot(to_plot)
 
 
-def train(model_fn, batch_size, learning_rate=None, epochs=10, regularize=False):
+def train(model_fn, batch_size, learning_rate=None, epochs=10, regularize=False, plot=True):
     """
     load FashionMNIST data.
     create model using model_fn, and train it on FashionMNIST.
@@ -59,8 +61,10 @@ def train(model_fn, batch_size, learning_rate=None, epochs=10, regularize=False)
     :param learning_rate: optional parameter - option to specify learning rate for the optimizer.
     :param epochs: optional parameter - number of epochs to train the model.
     :param regularize: optional parameter - option to train the model with regularization.
+    :param plot: optional parameter - allows the user to choose weather to plot the training/test loss/accuracy plots.
     :return:
     """
+    template = 'Epoch {} - training loss: {}, training accuracy: {}%, test loss: {}, test accuracy: {}%'
     # ---------- load data and pre-processing ----------
     x_train, y_train, x_test, y_test, n_labels = load_datasets(batch_size)
 
@@ -103,53 +107,44 @@ def train(model_fn, batch_size, learning_rate=None, epochs=10, regularize=False)
             e_test_accuracies = list()
 
             # ---------- training ----------
-            training_counter = 1
             for data, labels in zip(x_train, y_train):
                 losses, _, logits = sess.run([loss, optimizer, model], feed_dict={x_ph: data, y_ph: labels})
                 round_loss = np.mean(losses)
                 round_accuracy = calculate_accuracy(logits, labels)
-                training_losses.append(round_loss)
-                training_accuracies.append(round_accuracy)
                 e_training_losses.append(round_loss)
                 e_training_accuracies.append(round_accuracy)
-                print('Epoch {}, training round {}, loss: {}, accuracy: {}%'.format(epoch, training_counter, round_loss, round_accuracy)) \
-                    if training_counter == 1 or not training_counter % 100 else None
-                training_counter += 1
 
             # ---------- testing ----------
-            test_counter = 1
             for t_data, t_labels in zip(x_test, y_test):
                 logits, losses = sess.run([model, loss], feed_dict={x_ph: t_data, y_ph: t_labels})
                 round_loss = np.mean(losses)
                 round_accuracy = calculate_accuracy(logits, t_labels)
-                test_losses.append(round_loss)
-                test_accuracies.append(round_accuracy)
                 e_test_losses.append(round_loss)
                 e_test_accuracies.append(round_accuracy)
-                print('Epoch {}, test round {}, loss: {}, accuracy: {}%'.format(epoch, test_counter, round_loss, round_accuracy)) if test_counter == 1 or not test_counter % 50 else None
-                test_counter += 1
 
-            # ---------- informing the user ----------
-            template = 'Epoch {} summary - training loss: {}, training accuracy: {}%, test loss: {}, test accuracy: {}%\n'
+            # ---------- updating measurements and informing user ----------
+            training_losses.append(np.mean(e_training_losses))
+            training_accuracies.append(np.mean(e_training_accuracies))
+            test_losses.append(np.mean(e_test_losses))
+            test_accuracies.append(np.mean(e_test_accuracies))
             print(template.format(epoch, np.mean(e_training_losses), np.mean(e_training_accuracies), np.mean(e_test_losses), np.mean(e_test_accuracies)))
 
     # ---------- plotting the graphs ----------
-    func_title = 'MLP\n' if model_fn == mlp else 'ConvNet\n'
-    reg_title = ', with regularization' if regularize else ', without regularization'
-    plot_graph(training_losses, func_title + 'training loss values\nwith {} epochs, and batch size {}'.format(epochs, batch_size) + reg_title)
-    plot_graph(training_accuracies, func_title + 'training accuracies values\nwith {} epochs, and batch size {}'.format(epochs, batch_size) + reg_title)
-    plot_graph(test_losses, func_title + 'test loss values\nwith {} epochs, and batch size {}'.format(epochs, batch_size) + reg_title)
-    plot_graph(test_accuracies, func_title + 'test accuracy values\nwith {} epochs, and batch size {}'.format(epochs, batch_size) + reg_title)
+    if plot:
+        func_title = 'MLP\n' if model_fn == mlp else 'ConvNet\n'
+        reg_title = ', with regularization' if regularize else ', without regularization'
+        plot_graph(training_losses, func_title + 'training loss values\nwith {} epochs, and batch size {}'.format(epochs, batch_size) + reg_title)
+        plot_graph(training_accuracies, func_title + 'training accuracies values\nwith {} epochs, and batch size {}'.format(epochs, batch_size) + reg_title)
+        plot_graph(test_losses, func_title + 'test loss values\nwith {} epochs, and batch size {}'.format(epochs, batch_size) + reg_title)
+        plot_graph(test_accuracies, func_title + 'test accuracy values\nwith {} epochs, and batch size {}'.format(epochs, batch_size) + reg_title)
 
 
 def main():
-    train(mlp, 100, epochs=1, regularize=True)
+    train(mlp, 64, epochs=50)
     # tf.reset_default_graph()
-    # train(mlp, 100, epochs=10)
+    # train(conv_net, 64, epochs=50)
     # tf.reset_default_graph()
-    # train(conv_net, 64, epochs=1, regularize=True)
-    # tf.reset_default_graph()
-    # train(conv_net, 64, epochs=1)
+    # train(mlp, 64, epochs=150, regularize=True)
     plt.show()
 
 
