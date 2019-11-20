@@ -41,7 +41,7 @@ def calculate_accuracy(logits, labels):
     results = np.zeros(s_logits.shape[0]).astype(np.int32)
     for i in range(results.shape[0]):
         results[i] = np.argmax(s_logits[i])
-    return round(100 * len(results[results == labels]) / len(results), 5)
+    return 100 * len(results[results == labels]) / len(results)
 
 
 def plot_graph(to_plot, title):
